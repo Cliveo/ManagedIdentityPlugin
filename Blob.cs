@@ -1,9 +1,9 @@
-//using Azure.Core;
-using Microsoft.Azure.Storage.Auth;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Core;
+using Azure.Storage.Blobs;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,14 +34,16 @@ namespace ManagedIdentityPlugin
             var identityService = (IManagedIdentityService)localPluginContext.ServiceProvider.GetService(typeof(IManagedIdentityService));
             var scopes = new List<string> { "https://storage.azure.com/.default" };
             var token = identityService.AcquireToken(scopes);
-            //var blobTokenProvider = new BlobTokenProvider(token);
+            var blobTokenProvider = new BlobTokenProvider(token);
             localPluginContext.TracingService.Trace(token);
             var blobUrl = "https://ppolivergsa.blob.core.windows.net";
 
-            var client = new CloudBlobClient(new Uri(blobUrl), new StorageCredentials(new TokenCredential(token)), null);
-            var containers = client.ListContainers();
+            BlobServiceClient client = new BlobServiceClient(new Uri(blobUrl), blobTokenProvider);
+            var containers = client.GetBlobContainers();
 
-            foreach (var container in containers)
+            localPluginContext.TracingService.Trace($"Hello"); 
+            localPluginContext.TracingService.Trace($"Accountz: {client.AccountName}"); 
+            foreach (var container in containers) 
             {
                 localPluginContext.TracingService.Trace(container.Name);
             }
@@ -60,22 +62,22 @@ namespace ManagedIdentityPlugin
             //}
         }
 
-        //public class BlobTokenProvider : TokenCredential
-        //{
-        //    private string _token;
+        public class BlobTokenProvider : TokenCredential
+        {
+            private string _token;
 
-        //    public BlobTokenProvider(string token)
-        //    {
-        //        _token = token;
-        //    }
-        //    public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
-        //    {
-        //        return new ValueTask<AccessToken>();
-        //    }
-        //    public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
-        //    {
-        //        return new AccessToken(_token, new DateTimeOffset(DateTime.UtcNow.AddMinutes(2)));
-        //    }
-        //}
+            public BlobTokenProvider(string token)
+            {
+                _token = token;
+            }
+            public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
+            {
+                return new ValueTask<AccessToken>(new AccessToken(_token, new DateTimeOffset(DateTime.UtcNow.AddMinutes(2))));
+            }
+            public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
+            {
+                return new AccessToken(_token, new DateTimeOffset(DateTime.UtcNow.AddMinutes(2)));
+            }
+        }
     }
 }
