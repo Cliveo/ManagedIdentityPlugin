@@ -1,5 +1,6 @@
 using Azure.Core;
 using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
@@ -15,14 +16,10 @@ namespace ManagedIdentityPlugin
     /// </summary>
     public class Blob : PluginBase
     {
-        public Blob(string unsecureConfiguration, string secureConfiguration)
-            : base(typeof(Blob))
+        public Blob(string unsecureConfiguration, string secureConfiguration) : base(typeof(Blob))
         {
-            // TODO: Implement your custom configuration handling
-            // https://docs.microsoft.com/powerapps/developer/common-data-service/register-plug-in#set-configuration-data
         }
 
-        // Entry point for custom business logic execution
         protected override void ExecuteDataversePlugin(ILocalPluginContext localPluginContext)
         {
             if (localPluginContext == null)
@@ -30,43 +27,58 @@ namespace ManagedIdentityPlugin
                 throw new ArgumentNullException(nameof(localPluginContext));
             }
 
-            var context = localPluginContext.PluginExecutionContext;
+            var blobUrl = "https://<blobname>.blob.core.windows.net";
+
             var identityService = (IManagedIdentityService)localPluginContext.ServiceProvider.GetService(typeof(IManagedIdentityService));
             var scopes = new List<string> { "https://storage.azure.com/.default" };
             var token = identityService.AcquireToken(scopes);
-            var blobTokenProvider = new BlobTokenProvider(token);
-            localPluginContext.TracingService.Trace(token);
-            var blobUrl = "https://ppolivergsa.blob.core.windows.net";
+            var blobTokenProvider = new TokenCredentialProvider(token);
 
             BlobServiceClient client = new BlobServiceClient(new Uri(blobUrl), blobTokenProvider);
-            var containers = client.GetBlobContainers();
 
-            localPluginContext.TracingService.Trace($"Hello"); 
-            localPluginContext.TracingService.Trace($"Accountz: {client.AccountName}"); 
-            foreach (var container in containers) 
+            GenerateSaSToken(localPluginContext, client);
+
+            IterateContainers(localPluginContext, client);
+        }
+
+        private static void IterateContainers(ILocalPluginContext localPluginContext, BlobServiceClient client)
+        {
+            var containers = client.GetBlobContainers();
+            foreach (var container in containers)
             {
                 localPluginContext.TracingService.Trace(container.Name);
             }
-            // TODO: Implement your custom business logic
-
-            // Check for the entity on which the plugin would be registered
-            //if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
-            //{
-            //    var entity = (Entity)context.InputParameters["Target"];
-
-            //    // Check for entity name on which this plugin would be registered
-            //    if (entity.LogicalName == "account")
-            //    {
-
-            //    }
-            //}
         }
 
-        public class BlobTokenProvider : TokenCredential
+        private static void GenerateSaSToken(ILocalPluginContext localPluginContext, BlobServiceClient client)
+        {
+            var userDelegationKey = client.GetUserDelegationKey(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1));
+
+            var blobContainerClient = client.GetBlobContainerClient("plugin");  
+            var blobClient = blobContainerClient.GetBlobClient("image.jpg");
+
+            // Get a user delegation key 
+            var sasBuilder = new BlobSasBuilder()
+            {
+                BlobContainerName = blobClient.BlobContainerName,
+                BlobName = blobClient.Name,
+                Resource = "b", // b for blob, c for container
+                StartsOn = DateTimeOffset.UtcNow,
+                ExpiresOn = DateTimeOffset.UtcNow.AddHours(4),
+            };
+            sasBuilder.SetPermissions(BlobSasPermissions.Read | BlobSasPermissions.Write);
+
+            string sasToken = sasBuilder.ToSasQueryParameters(userDelegationKey, client.AccountName).ToString();
+
+            localPluginContext.TracingService.Trace("SAS-Token {0}", sasToken);
+            localPluginContext.TracingService.Trace($"{blobClient.Uri}?{sasToken}");
+        }
+
+        public class TokenCredentialProvider : TokenCredential
         {
             private string _token;
 
-            public BlobTokenProvider(string token)
+            public TokenCredentialProvider(string token)
             {
                 _token = token;
             }

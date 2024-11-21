@@ -36,6 +36,6 @@
   <Import Project="$(PowerAppsTargetsPath)\Microsoft.PowerApps.VisualStudio.Plugin.targets" Condition="Exists('$(PowerAppsTargetsPath)\Microsoft.PowerApps.VisualStudio.Plugin.targets')" />
 
   <Target Name="PostBuild" AfterTargets="Pack">
-    <Exec Command="dotnet nuget sign C:\Users\coldridge\repos\ManagedIdentityPlugin\bin\Debug\ManagedIdentityPlugin.1.0.0.nupkg --certificate-subject-name ManagedIdentityPlugin" />
+    <Exec Command="dotnet nuget sign $(ProjectDir)bin\$(ConfigurationName)\ManagedIdentityPlugin.1.0.0.nupkg --certificate-subject-name ManagedIdentityPlugin" />
   </Target>
 </Project>
