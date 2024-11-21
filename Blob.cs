@@ -27,6 +27,8 @@ namespace ManagedIdentityPlugin
                 throw new ArgumentNullException(nameof(localPluginContext));
             }
 
+            var tracingService = localPluginContext.TracingService;
+
             var blobUrl = "https://<blobname>.blob.core.windows.net";
 
             var identityService = (IManagedIdentityService)localPluginContext.ServiceProvider.GetService(typeof(IManagedIdentityService));
@@ -36,21 +38,22 @@ namespace ManagedIdentityPlugin
 
             BlobServiceClient client = new BlobServiceClient(new Uri(blobUrl), blobTokenProvider);
 
-            GenerateSaSToken(localPluginContext, client);
+            GenerateSaSToken(tracingService, client);
 
-            IterateContainers(localPluginContext, client);
+
+            IterateContainers(tracingService, client);
         }
 
-        private static void IterateContainers(ILocalPluginContext localPluginContext, BlobServiceClient client)
+        private static void IterateContainers(ITracingService tracingService, BlobServiceClient client)
         {
             var containers = client.GetBlobContainers();
             foreach (var container in containers)
             {
-                localPluginContext.TracingService.Trace(container.Name);
+                tracingService.Trace(container.Name);
             }
         }
 
-        private static void GenerateSaSToken(ILocalPluginContext localPluginContext, BlobServiceClient client)
+        private static void GenerateSaSToken(ITracingService tracingService, BlobServiceClient client)
         {
             var userDelegationKey = client.GetUserDelegationKey(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1));
 
@@ -70,26 +73,8 @@ namespace ManagedIdentityPlugin
 
             string sasToken = sasBuilder.ToSasQueryParameters(userDelegationKey, client.AccountName).ToString();
 
-            localPluginContext.TracingService.Trace("SAS-Token {0}", sasToken);
-            localPluginContext.TracingService.Trace($"{blobClient.Uri}?{sasToken}");
-        }
-
-        public class TokenCredentialProvider : TokenCredential
-        {
-            private string _token;
-
-            public TokenCredentialProvider(string token)
-            {
-                _token = token;
-            }
-            public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
-            {
-                return new ValueTask<AccessToken>(new AccessToken(_token, new DateTimeOffset(DateTime.UtcNow.AddMinutes(2))));
-            }
-            public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
-            {
-                return new AccessToken(_token, new DateTimeOffset(DateTime.UtcNow.AddMinutes(2)));
-            }
+            tracingService.Trace("SAS-Token {0}", sasToken);
+            tracingService.Trace($"{blobClient.Uri}?{sasToken}");
         }
     }
 }

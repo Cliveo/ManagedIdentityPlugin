@@ -23,6 +23,7 @@
     <Company>MyCompany</Company>
     <Description>This is a sample nuget package which contains a Dataverse plugin and its runtime dependencies like Newtonsoft.Json</Description>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,11 +32,12 @@
     <PackageReference Include="Microsoft.PowerApps.MSBuild.Plugin" Version="1.37.4" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
     <PackageReference Include="System.ClientModel" Version="1.2.1" />
+    <None Include="readme.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <Import Project="$(PowerAppsTargetsPath)\Microsoft.PowerApps.VisualStudio.Plugin.targets" Condition="Exists('$(PowerAppsTargetsPath)\Microsoft.PowerApps.VisualStudio.Plugin.targets')" />
 
   <Target Name="PostBuild" AfterTargets="Pack">
-    <Exec Command="dotnet nuget sign $(ProjectDir)bin\$(ConfigurationName)\ManagedIdentityPlugin.1.0.0.nupkg --certificate-subject-name ManagedIdentityPlugin" />
+    <Exec Command="dotnet nuget sign $(ProjectDir)bin\$(ConfigurationName)\ManagedIdentityPlugin.1.0.0.nupkg --certificate-subject-name ManagedIdentityPlugin --overwrite --timestamper http://timestamp.digicert.com" />
   </Target>
 </Project>
