@@ -34,9 +34,9 @@ namespace ManagedIdentityPlugin
             var identityService = (IManagedIdentityService)localPluginContext.ServiceProvider.GetService(typeof(IManagedIdentityService));
             var scopes = new List<string> { "https://storage.azure.com/.default" };
             var token = identityService.AcquireToken(scopes);
-            var blobTokenProvider = new TokenCredentialProvider(token);
+            var tokenCredential = new TokenCredentialProvider(token);
 
-            BlobServiceClient client = new BlobServiceClient(new Uri(blobUrl), blobTokenProvider);
+            BlobServiceClient client = new BlobServiceClient(new Uri(blobUrl), tokenCredential);
 
             GenerateSaSToken(tracingService, client);
 
