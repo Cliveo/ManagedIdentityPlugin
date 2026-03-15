@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SharePoint Embedded Container Workbench</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="ambient-bg">
+    <div class="ambient-glow1"></div>
+    <div class="ambient-glow2"></div>
+  </div>
+
+  <main class="shell">
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-group">
+          <div class="logo-mark">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor"/>
+              <rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor" fill-opacity="0.4"/>
+              <rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor" fill-opacity="0.4"/>
+              <rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="app-title">Container Workbench</h1>
+            <p class="app-subtitle">SharePoint Embedded + Dataverse Local Proxy</p>
+          </div>
+        </div>
+        
+        <div class="header-center">
+          <div class="header-context meta-badge meta-badge-input">
+            <div class="header-context-copy">
+              <span class="meta-label">Container Type</span>
+              <span class="header-context-note">Active scope for inventory and create actions</span>
+            </div>
+            <div class="header-context-input-group">
+              <input id="containerTypeId" type="text" class="input-modern compact" placeholder="Container Type ID (e.g. ecc6dd2c-...)" title="Enter Container Type ID to retrieve containers">
+            </div>
+          </div>
+        </div>
+
+        <div class="header-meta">
+          <div class="meta-badge">
+            <span class="meta-label">Current Org:</span>
+            <span class="meta-value" id="orgUrl">Not configured</span>
+          </div>
+          <div class="meta-badge">
+            <span class="meta-label">Auth Strategy:</span>
+            <span class="meta-value" id="authModeLabel">Azure CLI</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- LEFT COLUMN -->
+      <div class="main-column">
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="stat-value" id="overviewUsers">0</span>
+            <span class="stat-label">Available Users</span>
+          </div>
+          <div class="stat-card highlight">
+            <span class="stat-value" id="overviewAssignments">0</span>
+            <span class="stat-label">Access Assignments</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="containerCountPill">0</span>
+            <span class="stat-label">Loaded Containers</span>
+          </div>
+        </div>
+
+        <section class="card form-card">
+          <div class="card-header">
+            <h2>1. Create Payload</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Display Name</label>
+              <input id="displayName" type="text" class="input-modern" placeholder="Container name (defaults to file name)">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="description" class="input-modern textarea-modern" rows="2" placeholder="Add an optional description..."></textarea>
+            </div>
+            
+            <div class="file-upload-zone">
+              <label for="fileInput" class="file-upload-label">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <div class="upload-text-group">
+                  <span class="upload-text">Select initial file to upload</span>
+                  <span id="selectedFileName" class="upload-filename">No file selected</span>
+                  <span id="selectedFileMeta" class="upload-subtext">Choose a file to prefill the display name and build the create payload.</span>
+                </div>
+              </label>
+              <input id="fileInput" type="file" class="hidden-input">
+            </div>
+            <div id="fileSummary" class="file-summary-pill hidden"></div>
+          </div>
+        </section>
+
+        <div class="split-cards">
+          <section class="card list-card flex-1">
+            <div class="card-header flex-between">
+              <div class="header-titles">
+                <h3>Select Users</h3>
+                <span class="user-meta" id="userCountPill">0 loaded</span>
+                <span class="user-meta hidden" id="visibleUserCountPill">0</span>
+              </div>
+              <button id="refreshUsersButton" class="btn btn-ghost btn-sm">Load Users</button>
+            </div>
+            <div class="card-search">
+              <input id="userSearch" type="text" class="input-modern search-input" placeholder="Filter by name...">
+            </div>
+            <div class="list-container" id="availableUsers">
+              <div class="empty-message">Click Load Users to query Dataverse</div>
+            </div>
+          </section>
+
+          <section class="card list-card flex-1">
+            <div class="card-header flex-between">
+              <h3>Assigned Rights</h3>
+              <div class="badge primary" id="selectionCountPill">0</div>
+            </div>
+            <div class="list-container" id="selectedUsers">
+              <div class="empty-message">No users assigned yet</div>
+            </div>
+          </section>
+        </div>
+
+        <div class="primary-actions">
+          <button id="createButton" class="btn btn-primary btn-large">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Create Container & Upload
+          </button>
+        </div>
+      </div>
+      
+      <!-- RIGHT COLUMN -->
+      <div class="side-column">
+        <section class="card result-card">
+          <div class="card-header flex-between">
+            <h2>Inventory <span class="badge" id="containerHeaderCount">0</span></h2>
+            <div class="inventory-toolbar">
+              <button id="toggleRecycleBinButton" class="toolbar-pill toolbar-pill-neutral">Recycle Bin</button>
+              <div class="toolbar-combo">
+                <label class="toolbar-toggle" for="selectAllContainers">
+                  <input id="selectAllContainers" type="checkbox">
+                  <span>Select all</span>
+                </label>
+                <button id="bulkDeleteButton" class="toolbar-pill toolbar-pill-danger" disabled>Delete selected</button>
+              </div>
+              <div class="toolbar-combo toolbar-combo-limit">
+                <label class="toolbar-field" for="topCount">
+                  <span class="toolbar-field-label">Top</span>
+                  <input id="topCount" type="number" class="toolbar-input" value="20" placeholder="20">
+                </label>
+                <button id="refreshContainersButton" class="toolbar-pill toolbar-pill-accent">Refresh</button>
+              </div>
+            </div>
+          </div>
+          <div class="results-grid" id="containers">
+            <!-- Container Items -->
+            <div class="empty-message">No containers retrieved.</div>
+          </div>
+        </section>
+
+        <section class="card result-card hidden" id="recycleBinPanel">
+          <div class="card-header flex-between">
+            <h2>Recycle Bin <span class="badge" id="deletedContainerHeaderCount">0</span></h2>
+            <div class="action-group">
+              <button id="refreshDeletedContainersButton" class="btn btn-secondary btn-sm">Refresh Bin</button>
+            </div>
+          </div>
+          <div class="results-grid recycle-bin-grid" id="deletedContainers">
+            <div class="empty-message">No deleted containers loaded.</div>
+          </div>
+        </section>
+
+        <section class="card terminal-card">
+          <div class="card-header flex-between">
+            <h2>System Status</h2>
+            <div class="status-indicator idle" id="tokenState">Ready</div>
+          </div>
+          <div class="terminal-body">
+            <div class="terminal-summary" id="statusSummary">
+              <strong>Ready</strong>
+              <small>Resolve a container type, load users, or refresh containers.</small>
+            </div>
+            <div class="terminal-output-container">
+              <pre class="terminal-output" id="statusOutput">Waiting for input...</pre>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
