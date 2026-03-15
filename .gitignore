@@ -4,6 +4,19 @@
 /bin
 /obj
 
+# local tooling output
+/node_modules
+/.playwright-mcp
+/package-lock.json
+
+# local auth and proof artifacts
+/devicecode-*.json
+/front-end-*.md
+/front-end-*.txt
+/recycle-*.md
+/worked.js
+/This is a test.docx
+
 # vs intermediate directory
 /.vs
 
