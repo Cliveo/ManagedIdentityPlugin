@@ -17,6 +17,8 @@ The main idea is simple:
 - A small script that grants the runtime managed identity the Graph roles and container-type application permission it needs.
 - A local workbench that exercises the custom APIs through Dataverse.
 
+The PowerShell helpers now live under `scripts/` so the repo root stays focused on the plugin package itself.
+
 ## What is intentionally not included
 
 - Container type creation.
@@ -47,6 +49,7 @@ The code is grouped by domain:
 - `Domains/PowerAutomate`: flow example plugin.
 - `Domains/SharePointEmbedded`: SharePoint Embedded custom APIs and Graph client.
 - `Infrastructure`: shared plugin base and token credential plumbing.
+- `scripts`: Dataverse registration and managed identity helper scripts.
 
 ## Custom APIs
 
@@ -77,7 +80,7 @@ The combined create flow is usually the best place to start:
 3. Grant the runtime managed identity access:
 
 ```powershell
-pwsh ./GrantManagedIdentitySharePointEmbeddedRuntimeAccess.ps1 \
+pwsh ./scripts/GrantManagedIdentitySharePointEmbeddedRuntimeAccess.ps1 \
 	-TenantId '<tenant-id>' \
 	-OwningAppId '<owning-app-id>' \
 	-ManagedIdentityAppId '<managed-identity-app-id>' \
@@ -90,7 +93,7 @@ pwsh ./GrantManagedIdentitySharePointEmbeddedRuntimeAccess.ps1 \
 5. Register the Dataverse custom APIs:
 
 ```powershell
-pwsh ./RegisterSharePointEmbeddedCustomApis.ps1 -OrgUrl 'https://your-org.crm.dynamics.com'
+pwsh ./scripts/RegisterSharePointEmbeddedCustomApis.ps1 -OrgUrl 'https://your-org.crm.dynamics.com'
 ```
 
 That helper script assigns the runtime Graph app roles, registers the existing container type in the target tenant, and then grants the managed identity application permission on that registration.

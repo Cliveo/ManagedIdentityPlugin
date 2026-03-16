@@ -114,6 +114,31 @@ const writeStatus = (message, payload) => {
   setStatusSummary(message, payload === undefined ? 'Latest action recorded.' : 'Latest action includes details in the run log below.');
 };
 
+const extractErrorMessage = (text, fallbackMessage) => {
+  if (!text) {
+    return fallbackMessage;
+  }
+
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed === 'string' && parsed.trim()) {
+      return parsed;
+    }
+
+    if (parsed?.error?.message) {
+      return parsed.error.message;
+    }
+
+    if (parsed?.Message) {
+      return parsed.Message;
+    }
+  } catch {
+    // Fall back to the raw response body when the payload is not JSON.
+  }
+
+  return text || fallbackMessage;
+};
+
 const loadConfig = async () => {
   const response = await fetch('/config');
   const config = await response.json();
@@ -209,7 +234,7 @@ const dataverseFetch = async (path, options = {}) => {
 
   const text = await response.text();
   if (!response.ok) {
-    throw new Error(text || `Dataverse request failed for ${path}`);
+    throw new Error(extractErrorMessage(text, `Dataverse request failed for ${path}`));
   }
 
   return text ? JSON.parse(text) : {};

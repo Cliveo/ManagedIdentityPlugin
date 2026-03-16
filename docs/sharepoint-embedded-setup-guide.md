@@ -92,7 +92,7 @@ Use the script in this repo once you know these values:
 Command:
 
 ```powershell
-pwsh ./GrantManagedIdentitySharePointEmbeddedRuntimeAccess.ps1 \
+pwsh ./scripts/GrantManagedIdentitySharePointEmbeddedRuntimeAccess.ps1 \
   -TenantId '<tenant-id>' \
   -OwningAppId '<owning-app-id>' \
   -ManagedIdentityAppId '<managed-identity-app-id>' \
@@ -119,7 +119,7 @@ Deploy it using your normal Dataverse plugin package deployment flow.
 ### 5. Register the custom APIs in Dataverse
 
 ```powershell
-pwsh ./RegisterSharePointEmbeddedCustomApis.ps1 -OrgUrl 'https://your-org.crm.dynamics.com'
+pwsh ./scripts/RegisterSharePointEmbeddedCustomApis.ps1 -OrgUrl 'https://your-org.crm.dynamics.com'
 ```
 
 ### 6. Test through the local workbench or direct custom API calls
@@ -166,4 +166,4 @@ This sample uses the simple `PUT /content` upload path. Keep uploads within the 
 
 ### Dataverse custom API registration fails
 
-Deploy the latest plugin package first, then rerun `RegisterSharePointEmbeddedCustomApis.ps1`.
+Deploy the latest plugin package first, then rerun `scripts/RegisterSharePointEmbeddedCustomApis.ps1`.

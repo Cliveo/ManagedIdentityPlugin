@@ -4,9 +4,9 @@ using System;
 
 namespace ManagedIdentityPlugin
 {
-    public class SharePointEmbeddedGetContainerDetails : PluginBase
+    public class SharePointEmbeddedRestoreContainer : PluginBase
     {
-        public SharePointEmbeddedGetContainerDetails(string unsecureConfiguration, string secureConfiguration) : base(typeof(SharePointEmbeddedGetContainerDetails))
+        public SharePointEmbeddedRestoreContainer(string unsecureConfiguration, string secureConfiguration) : base(typeof(SharePointEmbeddedRestoreContainer))
         {
         }
 
@@ -22,8 +22,10 @@ namespace ManagedIdentityPlugin
 
             using (var client = new SharePointEmbeddedGraphClient(localPluginContext))
             {
-                var details = client.GetContainerDetails(containerId);
-                context.OutputParameters["ContainerJson"] = JsonConvert.SerializeObject(details);
+                var restored = client.RestoreContainer(containerId);
+                context.OutputParameters["ContainerId"] = restored.ContainerId;
+                context.OutputParameters["Status"] = "Restored";
+                context.OutputParameters["ContainerJson"] = JsonConvert.SerializeObject(restored);
             }
         }
     }

@@ -361,7 +361,7 @@ $definitions = @(
         UniqueName = 'co_SharePointEmbeddedDeleteContainer'
         Name = 'SharePointEmbeddedDeleteContainer'
         IsFunction = $false
-        PluginTypeName = 'ManagedIdentityPlugin.SharePointEmbeddedGetContainerDetails'
+        PluginTypeName = 'ManagedIdentityPlugin.SharePointEmbeddedDeleteContainer'
         RequestParameters = @(
             @{ UniqueName = 'ContainerId'; Name = 'ContainerId'; Type = 10; IsOptional = $false }
         )
@@ -374,7 +374,7 @@ $definitions = @(
         UniqueName = 'co_SharePointEmbeddedRestoreContainer'
         Name = 'SharePointEmbeddedRestoreContainer'
         IsFunction = $false
-        PluginTypeName = 'ManagedIdentityPlugin.SharePointEmbeddedGetContainerDetails'
+        PluginTypeName = 'ManagedIdentityPlugin.SharePointEmbeddedRestoreContainer'
         RequestParameters = @(
             @{ UniqueName = 'ContainerId'; Name = 'ContainerId'; Type = 10; IsOptional = $false }
         )

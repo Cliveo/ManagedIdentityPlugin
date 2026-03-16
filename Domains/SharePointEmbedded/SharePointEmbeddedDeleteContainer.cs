@@ -1,12 +1,11 @@
 using Microsoft.Xrm.Sdk;
-using Newtonsoft.Json;
 using System;
 
 namespace ManagedIdentityPlugin
 {
-    public class SharePointEmbeddedGetContainerDetails : PluginBase
+    public class SharePointEmbeddedDeleteContainer : PluginBase
     {
-        public SharePointEmbeddedGetContainerDetails(string unsecureConfiguration, string secureConfiguration) : base(typeof(SharePointEmbeddedGetContainerDetails))
+        public SharePointEmbeddedDeleteContainer(string unsecureConfiguration, string secureConfiguration) : base(typeof(SharePointEmbeddedDeleteContainer))
         {
         }
 
@@ -22,9 +21,11 @@ namespace ManagedIdentityPlugin
 
             using (var client = new SharePointEmbeddedGraphClient(localPluginContext))
             {
-                var details = client.GetContainerDetails(containerId);
-                context.OutputParameters["ContainerJson"] = JsonConvert.SerializeObject(details);
+                client.DeleteContainer(containerId);
             }
+
+            context.OutputParameters["ContainerId"] = containerId;
+            context.OutputParameters["Status"] = "Deleted";
         }
     }
 }

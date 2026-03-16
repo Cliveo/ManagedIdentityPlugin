@@ -23,18 +23,6 @@ namespace ManagedIdentityPlugin
             int parsedTop;
             int? top = int.TryParse(topValue, out parsedTop) && parsedTop > 0 ? parsedTop : (int?)null;
 
-            if (string.Equals(context.MessageName, "co_SharePointEmbeddedListDeletedContainers", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(context.MessageName, "SharePointEmbeddedListDeletedContainers", StringComparison.OrdinalIgnoreCase))
-            {
-                using (var client = new SharePointEmbeddedGraphClient(localPluginContext))
-                {
-                    var containers = client.ListDeletedContainers(containerTypeId, top);
-                    context.OutputParameters["ContainersJson"] = JsonConvert.SerializeObject(containers);
-                }
-
-                return;
-            }
-
             using (var client = new SharePointEmbeddedGraphClient(localPluginContext))
             {
                 var containers = client.ListContainers(containerTypeId, top);
